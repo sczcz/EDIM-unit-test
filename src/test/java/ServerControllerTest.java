@@ -66,5 +66,19 @@ public class ServerControllerTest {
         verify(userRegister, times(2)).getUserHashMap();
     }
 
+    @Test
+    void testCheckLoginUser_ReturningUser() {
+        User returningUser = new User("returningUser");
+        HashMap<String, User> mockHashMap = new HashMap<>();
+        mockHashMap.put("returningUser", returningUser);
+
+        when(userRegister.getUserHashMap()).thenReturn(mockHashMap);
+
+        User resultUser = serverController.checkLoginUser(returningUser);
+
+        assertEquals(UserType.SENDUSER, resultUser.getUserType());
+        verify(userRegister, times(3)).getUserHashMap();
+    }
+
 
 }
