@@ -135,5 +135,8 @@ public class MainFrame extends JFrame {
         return clientController;
     }
 
+    //FOR TESTING PURPOSES ONLY BELOW
+    public MainPanel getMainPanel() {return mainPanel;}
+    //FOR TESTING PURPOSES ONLY ABOVE
 
 }

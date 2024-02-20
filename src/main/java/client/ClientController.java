@@ -186,7 +186,17 @@ public class ClientController {
     public ActivityRegister getActivityRegister() {
         return this.activityRegister;
     }
-    //FOR TESTING ABOVE
+    //ABOVE IS FOR TESTING PURPOSES ONLY
 
+    //BELOW IS FOR TESTING PURPOSES ONLY
+    public MainFrame getMainFrame() {
+        return this.mainFrame;
+    }
+    //ABOVE IS FOR TESTING PURPOSES ONLY
 
+    //BELOW IS FOR TESTING PURPOSES ONLY
+    public void setMainFrame(MainFrame mainFrame) {
+        this.mainFrame = mainFrame;
+    }
+    //ABOVE IS FOR TESTING PURPOSES ONLY
 }
