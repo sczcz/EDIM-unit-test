@@ -58,7 +58,11 @@ public class ClientController {
      */
     public void logIn() {
         user.setUserType(UserType.LOGIN);
-        ccc = new ClientCommunicationController(this);
+
+        if (ccc == null) {
+            ccc = new ClientCommunicationController(this);
+        }
+
         ccc.sendObject(user);
     }
 
@@ -177,6 +181,12 @@ public class ClientController {
     public User getUser() {
         return this.user;
     }
+
+    //BELOW IS FOR TESTING PURPOSES ONLY
+    public ActivityRegister getActivityRegister() {
+        return this.activityRegister;
+    }
+    //FOR TESTING ABOVE
 
 
 }
