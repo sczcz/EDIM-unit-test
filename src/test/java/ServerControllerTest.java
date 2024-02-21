@@ -14,11 +14,13 @@ import shared.UserType;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
+import java.io.*;
 import java.lang.reflect.Field;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.LinkedList;
 
 public class ServerControllerTest {
     @Mock
@@ -78,6 +80,27 @@ public class ServerControllerTest {
 
         assertEquals(UserType.SENDUSER, resultUser.getUserType());
         verify(userRegister, times(3)).getUserHashMap();
+    }
+
+    @Test
+    void testWriteUser() throws IOException, ClassNotFoundException {
+        Path tempFile = Files.createTempFile("test", ".dat");
+
+        User mockUser = new User("mockUser");
+        LinkedList<User> mockLinkedList = new LinkedList<>();
+        mockLinkedList.add(mockUser);
+
+        when(userRegister.getUserLinkedList()).thenReturn(mockLinkedList);
+
+        serverController.writeUsers(tempFile.toString());
+
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(tempFile.toFile()))) {
+            assertEquals(ois.readInt(), 1);
+            User readUser = (User) ois.readObject();
+            assertEquals("mockUser", readUser.getUsername());
+        }
+
+        Files.delete(tempFile);
     }
 
 

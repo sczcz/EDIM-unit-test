@@ -75,7 +75,7 @@ public class ServerController extends Thread {
     public void writeUsers(String filename) {
         try (ObjectOutputStream oos = new ObjectOutputStream(
                 new BufferedOutputStream(
-                        new FileOutputStream(Objects.requireNonNull(getClass().getClassLoader().getResource(filename)).getFile())))) {
+                        new FileOutputStream(filename)))) {
 
             oos.writeInt(userRegister.getUserLinkedList().size());
             for (User user : userRegister.getUserLinkedList()) {
