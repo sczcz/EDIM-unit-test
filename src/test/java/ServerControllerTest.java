@@ -110,6 +110,12 @@ public class ServerControllerTest {
         Path testFilePath = Files.createTempFile("test", ".dat");
         //String testFilePath = "src/test/resources/test-users.dat";
 
+        HashMap<String, User> mockedHashMap = new HashMap<>();
+        LinkedList<User> mockedLinkedList = new LinkedList<>();
+
+        when(userRegister.getUserHashMap()).thenReturn(mockedHashMap);
+        when(userRegister.getUserLinkedList()).thenReturn(mockedLinkedList);
+
         User mockUser = new User("mockUser");
         mockUser.setUsername("mockUser");
 
@@ -119,15 +125,12 @@ public class ServerControllerTest {
             oos.flush();
         }
 
-
         serverController.readUsers(testFilePath.toString());
 
-        User readUser = userRegister.getUserHashMap().get("mockUser");
-        //assertNotNull(readUser);
+        User readUser = mockedHashMap.get("mockUser");
         assertEquals("mockUser", readUser.getUsername());
 
-        User listUser = userRegister.getUserLinkedList().get(0);
-        //assertNotNull(listUser);
+        User listUser = mockedLinkedList.getFirst();
         assertEquals("mockUser", listUser.getUsername());
 
         //Files.delete(tempFile);
