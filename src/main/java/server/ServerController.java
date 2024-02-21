@@ -75,7 +75,7 @@ public class ServerController extends Thread {
     public void writeUsers(String filename) {
         try (ObjectOutputStream oos = new ObjectOutputStream(
                 new BufferedOutputStream(
-                        new FileOutputStream(filename)))) {
+                        new FileOutputStream(Objects.requireNonNull(getClass().getClassLoader().getResource(filename)).getFile())))) {
 
             oos.writeInt(userRegister.getUserLinkedList().size());
             for (User user : userRegister.getUserLinkedList()) {
@@ -95,7 +95,7 @@ public class ServerController extends Thread {
     public void readUsers(String filename) {
         try (ObjectInputStream ois = new ObjectInputStream(
                 new BufferedInputStream(
-                        Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream(filename))))) {
+                        new FileInputStream(filename)))) {
 
             if (ois != null) {
                 int size = ois.readInt();
@@ -103,12 +103,17 @@ public class ServerController extends Thread {
                     try {
                         User user = (User) ois.readObject();
                         userRegister.getUserHashMap().put(user.getUsername(), user);
+
+                        System.out.println(userRegister.getUserHashMap().get(user.getUsername()));
+                        System.out.println("User in readUsers: " + user.getUsername());
+
                         userRegister.getUserLinkedList().add(user);
                     } catch (ClassNotFoundException | IOException e) {
                         e.printStackTrace();
                     }
                 }
             }
+
         } catch (IOException e) {
             e.printStackTrace();
         }
