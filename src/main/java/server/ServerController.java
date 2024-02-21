@@ -103,10 +103,6 @@ public class ServerController extends Thread {
                     try {
                         User user = (User) ois.readObject();
                         userRegister.getUserHashMap().put(user.getUsername(), user);
-
-                        System.out.println(userRegister.getUserHashMap().get(user.getUsername()));
-                        System.out.println("User in readUsers: " + user.getUsername());
-
                         userRegister.getUserLinkedList().add(user);
                     } catch (ClassNotFoundException | IOException e) {
                         e.printStackTrace();

@@ -146,44 +146,33 @@ public class ServerControllerTest {
         User mockUser = new User("mockUser");
         mockUser.setUsername("mockUser");
 
-        System.out.println("Användare skapad: " + mockUser.getUsername());
-
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(testFilePath.toFile()))) {
             oos.writeInt(1);
             oos.writeObject(mockUser);
             oos.flush();
-
-            System.out.println("Object output stream färdig");
-        } catch (Exception e){
-            System.out.println("första try catch failade");
         }
 
 
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(testFilePath.toFile()))) {
 
-            System.out.println("Int in file: " + ois.readInt());
+            int writtenInt = ois.readInt();
 
             User writtenUser = (User) ois.readObject();
             assertEquals("mockUser", writtenUser.getUsername());
-
-            System.out.println("username: " + writtenUser.getUsername());
 
         } catch (ClassNotFoundException e) {
             System.out.println("Andra try catch failade");
         }
 
         serverController.readUsers(testFilePath.toString());
-        System.out.println("testFilePath: " + testFilePath.toString());
 
         User readUser = userRegister.getUserHashMap().get("mockUser");
-        System.out.println("Read user: " + readUser);
-
         assertEquals("mockUser", readUser.getUsername());
 
         User listUser = userRegister.getUserLinkedList().get(0);
         assertEquals("mockUser", listUser.getUsername());
 
-        Files.delete(testFilePath); // Rensa upp den temporära filen
+        Files.delete(testFilePath);
     }
 
 
