@@ -1,5 +1,9 @@
 import client.ClientCommunicationController;
 import client.ClientController;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
+import shared.Activity;
+import shared.ActivityRegister;
 import shared.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -8,12 +12,16 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import shared.UserType;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import javax.swing.*;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
 public class ClientControllerTest {
 
     @Mock
@@ -59,6 +67,36 @@ public class ClientControllerTest {
 
         assertEquals(UserType.OFFLINE, clientController.getUser().getUserType());
         assertNotNull(clientController.getActivityRegister());
+
+    }
+
+    @Test
+    public void testGetOfflineActivity() {
+
+        clientController.runOffline();
+        clientController.getUser().setDelayedActivity(null);
+        ActivityRegister mockActivityRegister = mock(ActivityRegister.class);
+        clientController.setActivityRegister(mockActivityRegister);
+        ImageIcon mockImage1 = mock(ImageIcon.class);
+        ImageIcon mockImage2 = mock(ImageIcon.class);
+        ImageIcon mockImage3 = mock(ImageIcon.class);
+        List<Activity> activityList = Arrays.asList(
+                new Activity("Activity1", "Instruction1", "Info1", "unitTesting", mockImage1),
+                new Activity("Activity2", "Instruction2", "Info2", "unitTesting", mockImage2),
+                new Activity("Activity3", "Instruction3", "Info3", "unitTesting", mockImage3)
+        );
+        when(mockActivityRegister.getSize()).thenReturn(3);
+        when(mockActivityRegister.getActivityRegister()).thenReturn(new LinkedList<>(activityList));
+
+        Activity testResult = clientController.getOfflineActivity();
+
+        assertNotNull(testResult);
+        assertTrue(clientController.getActivityRegister().getActivityRegister().stream()
+                .anyMatch(a -> a.getActivityName().equals(testResult.getActivityName()) &&
+                        a.getActivityInstruction().equals(testResult.getActivityInstruction()) &&
+                        a.getActivityInfo().equals(testResult.getActivityInfo()) &&
+                        a.getActivityUser().equals(testResult.getActivityUser()) &&
+                        a.getActivityImage() == testResult.getActivityImage()));
 
     }
 }

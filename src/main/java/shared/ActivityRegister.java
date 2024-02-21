@@ -51,4 +51,8 @@ public class ActivityRegister {
     public LinkedList<Activity> getActivityRegister() {
         return activityRegister;
     }
+
+    //BELOW IS FOR TESTING PURPOSES ONLY
+    public int getSize() {return activityRegister.size();}
+    //ABOVE IS FOR TESTING PURPOSES ONLY
 }

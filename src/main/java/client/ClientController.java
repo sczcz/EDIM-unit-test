@@ -117,7 +117,7 @@ public class ClientController {
      */
     public Activity getOfflineActivity() {
         Random rand = new Random();
-        int nbrOfActivities = activityRegister.getActivityRegister().size();
+        int nbrOfActivities = activityRegister.getSize();
         int activityNbr = rand.nextInt(nbrOfActivities);
         Activity activityToSend = new Activity();
         Activity getActivity = activityRegister.getActivityRegister().get(activityNbr);
@@ -197,6 +197,12 @@ public class ClientController {
     //BELOW IS FOR TESTING PURPOSES ONLY
     public void setMainFrame(MainFrame mainFrame) {
         this.mainFrame = mainFrame;
+    }
+    //ABOVE IS FOR TESTING PURPOSES ONLY
+
+    //BELOW IS FOR TESTING PURPOSES ONLY
+    public void setActivityRegister(ActivityRegister activityRegister) {
+        this.activityRegister = activityRegister;
     }
     //ABOVE IS FOR TESTING PURPOSES ONLY
 }

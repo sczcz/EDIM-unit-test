@@ -30,6 +30,16 @@ public class Activity implements Serializable {
         this.activityName = activityName;
     }
 
+    //BELOW IS FOR TESTING PURPOSES ONLY
+    public Activity(String activityName, String activityInstruction, String activityInfo, String activityUser, ImageIcon activityImage) {
+        this.activityName = activityName;
+        this.activityInstruction = activityInstruction;
+        this.activityInfo = activityInfo;
+        this.activityUser = activityUser;
+        this.activityImage = activityImage;
+    }
+    //ABOVE IS FOR TESTING PURPOSES ONLY
+
     public String getTime() {
         Calendar cal = Calendar.getInstance();
         String hours;
@@ -113,6 +123,10 @@ public class Activity implements Serializable {
     public void createActivityImage(String fileName) {
         activityImage = new ImageIcon(fileName);
     }
+
+    //BELOW IS FOR TESTING PURPOSES ONLY
+
+    //ABOVE IS FOR TESTING PURPOSES ONLY
 }
 
 
