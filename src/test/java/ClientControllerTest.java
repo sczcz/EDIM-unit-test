@@ -1,5 +1,6 @@
 import client.ClientCommunicationController;
 import client.ClientController;
+import client.gui.MainFrame;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import shared.Activity;
@@ -99,4 +100,38 @@ public class ClientControllerTest {
                         a.getActivityImage() == testResult.getActivityImage()));
 
     }
+
+    @Test
+    public void testReceiveUserNew() {
+        User userMock = mock(User.class);
+        MainFrame mainFrameMock = mock(MainFrame.class);
+        clientController.setMainFrame(mainFrameMock);
+        when(userMock.getUserType()).thenReturn(UserType.SENDWELCOME);
+
+        clientController.receiveUser(userMock);
+
+        assertEquals(UserType.SENDWELCOME, clientController.getUser().getUserType());
+        assertEquals(userMock, clientController.getUser());
+        verify(mainFrameMock, times(1)).sendWelcomeMessage();
+    }
+
+    @Test
+    public void testReceiveUserOld() {
+        User userMock = mock(User.class);
+        MainFrame mainFrameMock = mock(MainFrame.class);
+        clientController.setMainFrame(mainFrameMock);
+        when(userMock.getUserType()).thenReturn(UserType.WANTACTIVITY);
+
+        clientController.receiveUser(userMock);
+
+        assertNotEquals(UserType.SENDWELCOME, clientController.getUser().getUserType());
+        assertEquals(userMock, clientController.getUser());
+        verify(mainFrameMock, times(0)).sendWelcomeMessage();
+    }
+
+    @Test
+    public void testReceiveOnlineList() {
+        //TODO SKRIV DENNA
+    }
+
 }
