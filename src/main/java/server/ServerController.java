@@ -152,19 +152,28 @@ public class ServerController extends Thread {
      */
     public void sendActivity(String username) {
         User user = userRegister.getUserHashMap().get(username);
+
+        System.out.println("username in sendActivity(): " + user.getUsername());
+
         if (user.getDelayedActivity() != null) {
             sendBuffer.put(user.getDelayedActivity());
             user.setDelayedActivity(null);
         } else {
+            activityRegister = new ActivityRegister("activities.txt");
             int nbrOfActivities = activityRegister.getActivityRegister().size();
-            int activityNbr = rand.nextInt(nbrOfActivities);
+            System.out.println("nbrOfActivities: " + nbrOfActivities);
+            int activityNbr = 1;
             Activity activityToSend = new Activity();
+
             Activity getActivity = activityRegister.getActivityRegister().get(activityNbr);
             activityToSend.setActivityName(getActivity.getActivityName());
             activityToSend.setActivityInstruction(getActivity.getActivityInstruction());
             activityToSend.setActivityInfo(getActivity.getActivityInfo());
             activityToSend.setActivityUser(username);
             activityToSend.setActivityImage(getActivity.getActivityImage());
+
+            System.out.println("Activity to send: " + activityToSend.getActivityName());
+
             sendBuffer.put(activityToSend);
             System.out.println("Sending activity: " + activityToSend.getActivityName());
             changeSupport.firePropertyChange("Sending activity: ", activityToSend.getActivityName(), username);

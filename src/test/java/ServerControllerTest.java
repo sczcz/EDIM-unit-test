@@ -1,5 +1,6 @@
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import server.Logger;
@@ -9,6 +10,7 @@ import server.UserRegister;
 import shared.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentCaptor.forClass;
 import static org.mockito.Mockito.*;
 
 import java.io.*;
@@ -19,6 +21,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Objects;
+import java.util.Random;
 
 public class ServerControllerTest {
     @Mock
@@ -195,6 +198,26 @@ public class ServerControllerTest {
 
         verify(sendBuffer).put(delayedActivity);
         verify(mockUser).setDelayedActivity(null);
+    }
+
+    @Test
+    void testSendActivityWithoutDelayedActivity() throws NoSuchFieldException, IllegalAccessException {
+        String username = "mockUser";
+        User mockUser = new User(username);
+        mockUser.setUsername(username);
+
+        HashMap<String, User> mockUserHashMap = new HashMap<>();
+        mockUserHashMap.put(username, mockUser);
+
+        when(userRegister.getUserHashMap()).thenReturn(mockUserHashMap);
+
+        System.out.println("User from userHashMap: " + mockUserHashMap.get(username).getUsername());
+
+        ArgumentCaptor<Activity> activityCaptor = forClass(Activity.class);
+
+        serverController.sendActivity(mockUser.getUsername());
+
+        verify(sendBuffer).put(activityCaptor.capture());
     }
 
 
