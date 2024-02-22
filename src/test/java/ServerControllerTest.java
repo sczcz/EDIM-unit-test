@@ -6,10 +6,7 @@ import server.Logger;
 import server.LoggerGUI;
 import server.ServerController;
 import server.UserRegister;
-import shared.ActivityRegister;
-import shared.Buffer;
-import shared.User;
-import shared.UserType;
+import shared.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
@@ -176,6 +173,28 @@ public class ServerControllerTest {
         assertEquals("mockUser", listUser.getUsername());
 
         Files.delete(testFilePath);
+    }
+
+    @Test
+    void testSendActivityWithDelayedActivity() throws InterruptedException {
+        String username = "mockUser";
+        User mockUser = mock(User.class);
+        when(mockUser.getUsername()).thenReturn(username);
+        Activity delayedActivity = new Activity("delayedActivity");
+
+        when(mockUser.getDelayedActivity()).thenReturn(delayedActivity);
+
+        mockUser.setDelayedActivity(delayedActivity);
+
+        HashMap<String, User> mockedHashMap = new HashMap<>();
+        mockedHashMap.put(username, mockUser);
+
+        when(userRegister.getUserHashMap()).thenReturn(mockedHashMap);
+
+        serverController.sendActivity(username);
+
+        verify(sendBuffer).put(delayedActivity);
+        verify(mockUser).setDelayedActivity(null);
     }
 
 
