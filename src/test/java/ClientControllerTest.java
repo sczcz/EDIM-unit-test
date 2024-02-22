@@ -27,12 +27,17 @@ public class ClientControllerTest {
 
     @Mock
     private ClientCommunicationController cccMock;
+    @Mock
+    private User userMock;
+    @Mock
+    private MainFrame mainFrameMock;
     @InjectMocks
     private ClientController clientController;
 
     @BeforeEach
     public void setup() {
         MockitoAnnotations.openMocks(this);
+        clientController.setMainFrame(mainFrameMock);
         clientController.createUser("unitTesting");
     }
 
@@ -103,29 +108,25 @@ public class ClientControllerTest {
 
     @Test
     public void testReceiveUserNew() {
-        User userMock = mock(User.class);
-        MainFrame mainFrameMock = mock(MainFrame.class);
-        clientController.setMainFrame(mainFrameMock);
+
         when(userMock.getUserType()).thenReturn(UserType.SENDWELCOME);
 
         clientController.receiveUser(userMock);
 
-        assertEquals(UserType.SENDWELCOME, clientController.getUser().getUserType());
         assertEquals(userMock, clientController.getUser());
+        assertEquals(UserType.SENDWELCOME, clientController.getUser().getUserType());
         verify(mainFrameMock, times(1)).sendWelcomeMessage();
     }
 
     @Test
     public void testReceiveUserOld() {
-        User userMock = mock(User.class);
-        MainFrame mainFrameMock = mock(MainFrame.class);
-        clientController.setMainFrame(mainFrameMock);
+
         when(userMock.getUserType()).thenReturn(UserType.WANTACTIVITY);
 
         clientController.receiveUser(userMock);
 
-        assertNotEquals(UserType.SENDWELCOME, clientController.getUser().getUserType());
         assertEquals(userMock, clientController.getUser());
+        assertNotEquals(UserType.SENDWELCOME, clientController.getUser().getUserType());
         verify(mainFrameMock, times(0)).sendWelcomeMessage();
     }
 
