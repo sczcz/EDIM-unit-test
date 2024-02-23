@@ -14,6 +14,7 @@ import org.mockito.MockitoAnnotations;
 import shared.UserType;
 
 import javax.swing.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -45,7 +46,6 @@ public class ClientControllerTest {
     public void testCreateUser() {
 
         assertEquals("unitTesting", clientController.getUser().getUsername());
-
     }
 
     @Test
@@ -53,7 +53,6 @@ public class ClientControllerTest {
 
         assertEquals(UserType.LOGIN, clientController.getUser().getUserType());
         verify(cccMock, times(1)).sendObject(any(User.class));
-
     }
 
     @Test
@@ -63,7 +62,6 @@ public class ClientControllerTest {
 
         assertEquals(UserType.LOGOUT, clientController.getUser().getUserType());
         verify(cccMock, times(2)).sendObject(any(User.class));
-
     }
 
     @Test
@@ -73,7 +71,6 @@ public class ClientControllerTest {
 
         assertEquals(UserType.OFFLINE, clientController.getUser().getUserType());
         assertNotNull(clientController.getActivityRegister());
-
     }
 
     @Test
@@ -103,7 +100,6 @@ public class ClientControllerTest {
                         a.getActivityInfo().equals(testResult.getActivityInfo()) &&
                         a.getActivityUser().equals(testResult.getActivityUser()) &&
                         a.getActivityImage() == testResult.getActivityImage()));
-
     }
 
     @Test
@@ -132,7 +128,27 @@ public class ClientControllerTest {
 
     @Test
     public void testReceiveOnlineList() {
-        //TODO SKRIV DENNA
+
+        User user1 = new User("user1");
+        User user2 = new User("user2");
+        ArrayList<User> usersOnline = new ArrayList<>();
+        usersOnline.add(user1);
+        usersOnline.add(user2);
+
+        clientController.receiveOnlineList(usersOnline);
+
+        verify(mainFrameMock).showUsersOnline(argThat(argument -> argument.contains("user1") && argument.contains("user2")));
+    }
+
+    @Test
+    public void testSetInterval() {
+        int interval = 30;
+
+        clientController.setInterval(interval);
+
+        assertEquals(interval, clientController.getUser().getNotificationInterval());
+        assertEquals(UserType.SENDINTERVAL, clientController.getUser().getUserType());
+        verify(cccMock, times(2)).sendObject(clientController.getUser());
     }
 
 }
