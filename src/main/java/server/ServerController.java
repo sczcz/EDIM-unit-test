@@ -53,6 +53,10 @@ public class ServerController extends Thread {
         callSearchLogger(null, null);
     }
 
+    public void setSocketHashMap(HashMap<String, SocketStreamObject> socketHashMap) {
+        this.socketHashMap = socketHashMap;
+    }
+
     public void addListener(PropertyChangeListener pcl) {
         changeSupport.addPropertyChangeListener(pcl);
     }
@@ -185,17 +189,8 @@ public class ServerController extends Thread {
      *
      * @param username
      */
-    public void logOutUser(String username) {
-        try {
-            sleep(5000);
-            socketHashMap.get(username).getOos().close();
-            socketHashMap.get(username).getOis().close();
-            socketHashMap.get(username).getSocket().close();
-            socketHashMap.remove(username);
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
-        }
-        System.out.println("User logged out: " + username);
+    public synchronized void logOutUser(String username) {
+        socketHashMap.remove(username);
     }
 
     /**

@@ -51,6 +51,10 @@ public class SenderServer {
         }
     }
 
+    public int getThreadPoolSize() {
+        return threadPool.size();
+    }
+
     /**
      * Starts the thread pool.
      */

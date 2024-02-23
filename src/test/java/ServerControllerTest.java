@@ -3,18 +3,18 @@ import org.junit.jupiter.api.BeforeEach;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import server.Logger;
-import server.LoggerGUI;
-import server.ServerController;
-import server.UserRegister;
+import server.*;
 import shared.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentCaptor.forClass;
 import static org.mockito.Mockito.*;
 
 import java.io.*;
 import java.lang.reflect.Field;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
@@ -36,6 +36,8 @@ public class ServerControllerTest {
     private Logger log;
     @Mock
     private LoggerGUI loggerGUI;
+    @Mock
+    private HashMap<String, SocketStreamObject> socketHashMap;
 
     private ServerController serverController;
 
@@ -220,5 +222,19 @@ public class ServerControllerTest {
         verify(sendBuffer).put(activityCaptor.capture());
     }
 
+    @Test
+    void testLogOutUser() {
+        String username = "testUser";
+        HashMap<String, SocketStreamObject> mockSocketHashMap = new HashMap<>();
+        SocketStreamObject mockSocketStreamObject = mock(SocketStreamObject.class);
+
+        mockSocketHashMap.put(username, mockSocketStreamObject);
+
+        serverController.setSocketHashMap(mockSocketHashMap);
+
+        serverController.logOutUser(username);
+
+        assertFalse(mockSocketHashMap.containsKey(username));
+    }
 
 }
