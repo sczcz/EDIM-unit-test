@@ -38,6 +38,7 @@ public class RequestActivityTest {
         clientController.requestActivity();
 
         assertEquals(UserType.OFFLINE, clientController.getUser().getUserType());
+        assertNull(clientController.getUser().getDelayedActivity());
         verify(mainFrameMock).showNotification(any(Activity.class));
 
     }
@@ -52,6 +53,7 @@ public class RequestActivityTest {
         clientController.requestActivity();
 
         assertEquals(UserType.OFFLINE, clientController.getUser().getUserType());
+        assertNotNull(clientController.getUser().getDelayedActivity());
         verify(mainFrameMock).showNotification(mockDelayedActivity);
     }
 
@@ -64,6 +66,7 @@ public class RequestActivityTest {
         clientController.requestActivity();
 
         assertEquals(UserType.WANTACTIVITY, clientController.getUser().getUserType());
+        assertNull(clientController.getUser().getDelayedActivity());
         verify(cccMock, times(2)).sendObject(any(User.class));
 
     }
@@ -79,6 +82,7 @@ public class RequestActivityTest {
 
         assertNotEquals(UserType.WANTACTIVITY, clientController.getUser().getUserType());
         assertNotEquals(UserType.OFFLINE, clientController.getUser().getUserType());
+        assertNotNull(clientController.getUser().getDelayedActivity());
         verify(mainFrameMock).showNotification(mockDelayedActivity);
 
     }
