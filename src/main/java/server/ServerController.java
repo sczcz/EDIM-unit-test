@@ -2,12 +2,15 @@ package server;
 
 import shared.*;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Random;
 
 /**
  * This class handles the logic of the in and out coming objects from the clients.
@@ -16,21 +19,18 @@ import java.beans.PropertyChangeSupport;
  * @version 1.0
  */
 
-public class ServerController extends Thread {
-    private HashMap<String, SocketStreamObject> socketHashMap;
+public class ServerController {
+    private HashMap<String, ConnectionStream> socketHashMap;
     private ReceiverServer receiverServer;
-    private SenderServer senderServer;
     private UserRegister userRegister;
     private ActivityRegister activityRegister;
     private Random rand;
-    private String className = "Class: ServerController ";
     private Buffer<Object> receiveBuffer;
-    private Buffer<Object> sendBuffer;
-    private String userFilePath = "users.dat";
+    private String userFilePath = "files/users.dat";
     private Logger log;
     private PropertyChangeSupport changeSupport;
     private LoggerGUI loggerGUI;
-    private ArrayList<String> usersOnline = new ArrayList<>();
+    private ArrayList<String> usersOnline;
 
     /**
      * Constructs all the buffers and servers and HashMaps that is needed.
@@ -39,22 +39,17 @@ public class ServerController extends Thread {
      */
     public ServerController(int port) {
         receiveBuffer = new Buffer<>();
-        sendBuffer = new Buffer();
         socketHashMap = new HashMap();
-        receiverServer = new ReceiverServer(port, socketHashMap, receiveBuffer);
-        senderServer = new SenderServer(socketHashMap, sendBuffer);
+        receiverServer = new ReceiverServer(port, this);
         userRegister = new UserRegister();
+        usersOnline = new ArrayList<>();
         readUsers(userFilePath);
-        activityRegister = new ActivityRegister("activities.txt");
+        activityRegister = new ActivityRegister("files/activities.txt");
         rand = new Random();
         this.changeSupport = new PropertyChangeSupport(this);
         log = new Logger(this);
         loggerGUI = new LoggerGUI(this);
         callSearchLogger(null, null);
-    }
-
-    public void setSocketHashMap(HashMap<String, SocketStreamObject> socketHashMap) {
-        this.socketHashMap = socketHashMap;
     }
 
     public void addListener(PropertyChangeListener pcl) {
@@ -76,13 +71,10 @@ public class ServerController extends Thread {
      *
      * @param filename the name of the created file.
      */
-    public void writeUsers(String filename) {
-        try (ObjectOutputStream oos = new ObjectOutputStream(
-                new BufferedOutputStream(
-                        new FileOutputStream(Objects.requireNonNull(getClass().getClassLoader().getResource(filename)).getFile())))) {
-
-            oos.writeInt(userRegister.getUserLinkedList().size());
-            for (User user : userRegister.getUserLinkedList()) {
+    public synchronized void writeUsers(String filename) {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(filename)))) {
+            oos.writeInt(userRegister.getUserArrayList().size());
+            for (User user : userRegister.getUserArrayList()) {
                 oos.writeObject(user);
             }
             oos.flush();
@@ -97,25 +89,22 @@ public class ServerController extends Thread {
      * @param filename the read filename.
      */
     public void readUsers(String filename) {
-        try (ObjectInputStream ois = new ObjectInputStream(
-                new BufferedInputStream(
-                        new FileInputStream(filename)))) {
-
-            if (ois != null) {
+        File newFile = new File(filename);
+        if (newFile.length() != 0) {
+            try (ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(new FileInputStream(filename)))) {
                 int size = ois.readInt();
                 for (int i = 0; i < size; i++) {
                     try {
                         User user = (User) ois.readObject();
                         userRegister.getUserHashMap().put(user.getUsername(), user);
-                        userRegister.getUserLinkedList().add(user);
+                        userRegister.getUserArrayList().add(user);
                     } catch (ClassNotFoundException | IOException e) {
                         e.printStackTrace();
                     }
                 }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 
@@ -127,7 +116,7 @@ public class ServerController extends Thread {
      * @return an updated User.
      */
     public User checkLoginUser(User user) {
-        if (!userRegister.getUserHashMap().isEmpty()) {
+        if (userRegister.getUserHashMap().size() != 0) {
 
             if (userRegister.getUserHashMap().containsKey(user.getUsername())) { //userRegister.getUserHashMap().get(user.getUserName()).getUserName().equals(user.getUserName())
                 user = userRegister.getUserHashMap().get(user.getUsername());
@@ -135,13 +124,13 @@ public class ServerController extends Thread {
             } else {
                 user.setUserType(UserType.SENDWELCOME);
                 userRegister.getUserHashMap().put(user.getUsername(), user);
-                userRegister.getUserLinkedList().add(user);
+                userRegister.getUserArrayList().add(user);
                 writeUsers(userFilePath);
             }
         } else {
             user.setUserType(UserType.SENDWELCOME);
             userRegister.getUserHashMap().put(user.getUsername(), user);
-            userRegister.getUserLinkedList().add(user);
+            userRegister.getUserArrayList().add(user);
             writeUsers(userFilePath);
         }
         return user;
@@ -154,34 +143,92 @@ public class ServerController extends Thread {
      *
      * @param username the received username.
      */
-    public void sendActivity(String username) {
+    public synchronized void sendActivity(String username) {
         User user = userRegister.getUserHashMap().get(username);
+        int nbrOfActivities = activityRegister.getActivityRegister().size();
+        int activityNbr = rand.nextInt(nbrOfActivities);
+        Activity activityToSend = new Activity();
+        Activity getActivity = activityRegister.getActivityRegister().get(activityNbr);
+        activityToSend.setActivityName(getActivity.getActivityName());
+        activityToSend.setActivityInstruction(getActivity.getActivityInstruction());
+        activityToSend.setActivityInfo(getActivity.getActivityInfo());
+        activityToSend.setActivityUser(username);
+        activityToSend.setActivityImage(getActivity.getActivityImage());
+        socketHashMap.get(username).sendObject(activityToSend);
+        System.out.println("Sending activity: " + activityToSend.getActivityName());  //TODO: Test - ta bort
+        changeSupport.firePropertyChange("Sending activity: ", activityToSend.getActivityName(), username);
 
-        System.out.println("username in sendActivity(): " + user.getUsername());
+    }
 
-        if (user.getDelayedActivity() != null) {
-            sendBuffer.put(user.getDelayedActivity());
-            user.setDelayedActivity(null);
-        } else {
-            activityRegister = new ActivityRegister("activities.txt");
-            int nbrOfActivities = activityRegister.getActivityRegister().size();
-            System.out.println("nbrOfActivities: " + nbrOfActivities);
-            int activityNbr = 1;
-            Activity activityToSend = new Activity();
+    public void receiveObject(Object object) {
+        if (object instanceof User) {
+            User user = (User) object;
+            String userName = user.getUsername();
+            UserType userType = user.getUserType();
 
-            Activity getActivity = activityRegister.getActivityRegister().get(activityNbr);
-            activityToSend.setActivityName(getActivity.getActivityName());
-            activityToSend.setActivityInstruction(getActivity.getActivityInstruction());
-            activityToSend.setActivityInfo(getActivity.getActivityInfo());
-            activityToSend.setActivityUser(username);
-            activityToSend.setActivityImage(getActivity.getActivityImage());
+            switch (userType) {
+                case LOGIN:
+                    User updatedUser = checkLoginUser(user);
+                    changeSupport.firePropertyChange("New login: ", null, userName);
+                    socketHashMap.get(userName).sendObject(updatedUser);
+                    if (!usersOnline.contains(updatedUser.getUsername())) {
+                        System.out.println("Added " + updatedUser.getUsername() + " to the onlinelist");
+                        usersOnline.add(updatedUser.getUsername());
+                    }
 
-            System.out.println("Activity to send: " + activityToSend.getActivityName());
+                    if (!usersOnline.isEmpty()) {
+                        for (String key : socketHashMap.keySet()) {
+                            boolean objectSent = socketHashMap.get(key).sendObject(usersOnline);
+                            System.out.println("Objekt skickat: " + objectSent);
+                            System.out.println("Login. Skickar uppdaterad (" + usersOnline.size() + " st) lista till: " + key); //TODO: Test - ta bort
+                            System.out.println(usersOnline);  //TODO: Test - ta bort
+                        }
+                    }
+                    break;
+                case LOGOUT:
+                    changeSupport.firePropertyChange("User logged out: ", null, userName);
+                    writeUsers(userFilePath);
+                    usersOnline.remove(userName);
+                    System.out.println("Removed " + userName + " to the onlinelist");
 
-            sendBuffer.put(activityToSend);
-            System.out.println("Sending activity: " + activityToSend.getActivityName());
-            changeSupport.firePropertyChange("Sending activity: ", activityToSend.getActivityName(), username);
+                    if (!usersOnline.isEmpty()) {
+                        for (String key : socketHashMap.keySet()) {
+                            socketHashMap.get(key).sendObject(usersOnline);
+                            System.out.println("LogOut. Skickar uppdaterad (" + usersOnline.size() + " st) lista till: " + key); //TODO: Test - ta bort
+                            System.out.println(usersOnline);  //TODO: Test - ta bort
+                        }
+                    }
+                    break;
+                case SENDINTERVAL:
+                    userRegister.updateUser(user);
+                    if (user.getNotificationInterval() == 0) {
+                        changeSupport.firePropertyChange("User interval: ", userName, user.getNotificationInterval() + " min");
+                    }
+                    else {
+                        changeSupport.firePropertyChange("User interval: ", userName,  " want an activity now");
+                    }
+
+                    break;
+                case WANTACTIVITY:
+                    changeSupport.firePropertyChange("User wants activity: ", null, userName);
+                    sendActivity(userName);
+                    break;
+            }
+        } else if (object instanceof Activity) {
+            Activity activity = (Activity) object;
+            String username = activity.getActivityUser();
+
+            if (activity.isCompleted()) {
+                changeSupport.firePropertyChange("Activity completed: ", username, activity.getActivityName());
+            } else {
+                changeSupport.firePropertyChange("Activity delayed: ", username, activity.getActivityName());
+            }
         }
+
+    }
+
+    public void addNewConnection(String userName, ConnectionStream connectionStream) {
+        socketHashMap.put(userName, connectionStream);
     }
 
     /**
@@ -191,64 +238,7 @@ public class ServerController extends Thread {
      */
     public synchronized void logOutUser(String username) {
         socketHashMap.remove(username);
+        System.out.println("User logged out: " + username);  //TODO: Test - ta bort
     }
 
-    /**
-     * Requirements: F.A.2, F.A.3, F.K.1, F.S.2
-     * Receives a User object from the receive-Buffer and checks if it's a User or a Activity.
-     */
-    public void run() {
-        while (true) {
-            try {
-                Object object = receiveBuffer.get();
-
-                if (object instanceof User) {
-                    User user = (User) object;
-                    String userName = user.getUsername();
-                    UserType userType = user.getUserType();
-
-                    switch (userType) {
-                        case LOGIN:
-                            User updatedUser = checkLoginUser(user);
-                            changeSupport.firePropertyChange("New login: ", null, userName);
-                            sendBuffer.put(updatedUser);
-                            if (!usersOnline.contains(updatedUser.getUsername())) {
-                                usersOnline.add(updatedUser.getUsername());
-                            }
-                            sendBuffer.put(userRegister.getUsersOnline(usersOnline));
-                            break;
-                        case LOGOUT:
-                            sendBuffer.put(user);
-                            logOutUser(userName);
-                            changeSupport.firePropertyChange("User logged out: ", null, userName);
-                            writeUsers(userFilePath);
-                            usersOnline.remove(user.getUsername());
-                            if (!usersOnline.isEmpty()) {
-                                sendBuffer.put(userRegister.getUsersOnline(usersOnline));
-                            }
-                            break;
-                        case SENDINTERVAL:
-                            userRegister.updateUser(user);
-                            changeSupport.firePropertyChange("User interval: ", userName, user.getNotificationInterval());
-                            break;
-                        case WANTACTIVITY:
-                            sendActivity(userName);
-                            changeSupport.firePropertyChange("User wants activity: ", null, userName);
-                            break;
-                    }
-                } else if (object instanceof Activity) {
-                    Activity activity = (Activity) object;
-                    String username = activity.getActivityUser();
-
-                    if (activity.isCompleted()) {
-                        changeSupport.firePropertyChange("Activity completed: ", username, activity.getActivityName());
-                    } else {
-                        changeSupport.firePropertyChange("Activity delayed: ", username, activity.getActivityName());
-                    }
-                }
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-    }
 }

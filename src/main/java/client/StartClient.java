@@ -8,6 +8,6 @@ package client;
 public class StartClient {
 
     public static void main(String[] args) {
-        ClientController client = new ClientController();
+     ClientController client = new ClientController();
     }
 }

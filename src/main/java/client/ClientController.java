@@ -1,9 +1,7 @@
 package client;
 
-import shared.Activity;
-
-
 import client.gui.MainFrame;
+import shared.Activity;
 import shared.ActivityRegister;
 import shared.User;
 import shared.UserType;
@@ -23,7 +21,6 @@ public class ClientController {
     private MainFrame mainFrame;
     private ClientCommunicationController ccc;
     private User user;
-    private String className = "Class: ClientController ";
     private ActivityRegister activityRegister;
 
     /**
@@ -58,12 +55,10 @@ public class ClientController {
      */
     public void logIn() {
         user.setUserType(UserType.LOGIN);
-
-        if (ccc == null) {
-            ccc = new ClientCommunicationController(this);
+        ccc = new ClientCommunicationController(this);
+        if (user.getUserType() != UserType.OFFLINE) {
+            ccc.sendObject(user);
         }
-
-        ccc.sendObject(user);
     }
 
     public boolean isOffline() {
@@ -75,7 +70,9 @@ public class ClientController {
      */
     public void logOut() {
         user.setUserType(UserType.LOGOUT);
-        ccc.sendObject(user);
+        if (user.getUserType() != UserType.OFFLINE) {
+            ccc.sendObject(user);
+        }
     }
 
     /**
@@ -84,7 +81,7 @@ public class ClientController {
      */
     public void runOffline() {
         user.setUserType(UserType.OFFLINE);
-        activityRegister = new ActivityRegister("activities.txt");
+        activityRegister = new ActivityRegister("files/activities.txt");
     }
 
 
@@ -94,10 +91,10 @@ public class ClientController {
      * If not: Sets the UserType to WANTACTIVITY and sends the user object to ClientCommunicationController
      */
     public void requestActivity() {
-        if (user.getUserType() == UserType.OFFLINE){
+        if (user.getUserType() == UserType.OFFLINE) {
             if (user.getDelayedActivity() == null) {
                 mainFrame.showNotification(getOfflineActivity());
-            } else  {
+            } else {
                 mainFrame.showNotification(user.getDelayedActivity());
             }
             return;
@@ -105,14 +102,15 @@ public class ClientController {
         if (user.getDelayedActivity() == null) {
             user.setUserType(UserType.WANTACTIVITY);
             ccc.sendObject(user);
-        } else  {
-         mainFrame.showNotification(user.getDelayedActivity());
+        } else {
+            mainFrame.showNotification(user.getDelayedActivity());
         }
     }
 
 
     /**
      * Requirement: F.A.1
+     *
      * @return
      */
     public Activity getOfflineActivity() {
@@ -145,11 +143,28 @@ public class ClientController {
      *
      * @param user the received object.
      */
-    public void receiveUser(User user) {
+    public synchronized void receiveUser(User user) {
         UserType userType = user.getUserType();
         this.user = user;
         if (userType == UserType.SENDWELCOME) {
             mainFrame.sendWelcomeMessage();
+        }
+    }
+
+    public void receiveObject(Object object) {
+        if (object instanceof User) {
+            User user = (User) object;
+            receiveUser(user);
+            if (user.getUserType() == UserType.LOGOUT) {
+                System.out.println("Vi kom in i receiveObject och ville disconnecta från server");
+                ccc.disconnect();
+            }
+        } else if (object instanceof Activity) {
+            Activity activity = (Activity) object;
+            receiveNotificationFromCCC(activity);
+        } else if (object instanceof ArrayList<?>) {
+            ArrayList<String> usersOnline = (ArrayList<String>) object;
+            updateOnlineList(usersOnline);
         }
     }
 
@@ -160,7 +175,7 @@ public class ClientController {
      */
     public void setInterval(int interval) {
         if (user.getUserType() != UserType.OFFLINE) {
-            user.setNotificationInterval(interval);   //TODO: Används denna? Ta bort?
+            user.setNotificationInterval(interval);
             user.setUserType(UserType.SENDINTERVAL);
             ccc.sendObject(user);
         }
@@ -168,12 +183,15 @@ public class ClientController {
 
     /**
      * Requirements: F.K.1
+     *
      * @param usersOnline
      */
-    public void receiveOnlineList(ArrayList<User> usersOnline) {
-        ArrayList<String> usersOnlineString = new ArrayList<>();
-        for (User user : usersOnline) {
-            usersOnlineString.add(user.getUsername());
+    public void updateOnlineList(ArrayList<String> usersOnline) {
+       ArrayList<String> usersOnlineString = new ArrayList<>();
+        for (String user : usersOnline) {
+            if (!this.user.getUsername().equals(user)) {
+                usersOnlineString.add(user);
+            }
         }
         mainFrame.showUsersOnline(usersOnlineString);
     }
@@ -181,12 +199,6 @@ public class ClientController {
     public User getUser() {
         return this.user;
     }
-
-    //BELOW IS FOR TESTING PURPOSES ONLY
-    public ActivityRegister getActivityRegister() {
-        return this.activityRegister;
-    }
-    //FOR TESTING ABOVE
 
 
 }

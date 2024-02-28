@@ -3,6 +3,7 @@ package client.gui;
 import shared.Activity;
 
 import javax.swing.*;
+import javax.swing.border.TitledBorder;
 import java.awt.*;
 
 /**
@@ -15,19 +16,25 @@ public class MainPanel extends JPanel {
     private String userName;
     private Color backGroundColor;
 
-    public MainPanel(MainFrame mainFrame, String userName) {
+    public MainPanel(MainFrame mainFrame, String userName, String status) {
         this.mainFrame = mainFrame;
         this.userName = userName;
         backGroundColor = new Color(134, 144, 154, 145); //64, 87, 139
-        setupPanel();
+        setupPanel(status);
         appPanel = new AppPanel(this);
         showAppPanel();
     }
 
-    public void setupPanel() {
+    public void setupPanel(String status) {
         setSize(new Dimension(819, 438));
         setBackground(backGroundColor);
-        setBorder(BorderFactory.createTitledBorder("Välkommen, " + userName));
+        TitledBorder tb = BorderFactory.createTitledBorder("Välkommen, " + userName + " - " + status);
+        if (status.equals("OFFLINE")) {
+            tb.setTitleColor(Color.RED);
+        } else {
+            tb.setTitleColor(new Color(0x339F02));
+        }
+        setBorder(tb);
     }
 
     public void showAppPanel() {

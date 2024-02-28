@@ -2,6 +2,7 @@ package client.gui;
 
 import client.ClientController;
 import shared.Activity;
+
 import javax.swing.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -18,7 +19,6 @@ import java.util.ArrayList;
 public class MainFrame extends JFrame {
     private ClientController clientController;
     private MainPanel mainPanel;
-    private String className = "Class: MainFrame ";
     private String userName;
 
 
@@ -66,11 +66,15 @@ public class MainFrame extends JFrame {
     }
 
     /**
-     * Creates the main frame for the GUI.
+     * Creates the main panel for the GUI.
      */
-    public void createMainFrame() {
+    public void createMainPanel() {
         setupFrame();
-        mainPanel = new MainPanel(this, userName);
+        String status = "ONLINE";
+        if (clientController.isOffline()) {
+            status = "OFFLINE";
+        }
+        mainPanel = new MainPanel(this, userName, status);
         setContentPane(mainPanel);
     }
 
@@ -124,6 +128,13 @@ public class MainFrame extends JFrame {
     }
 
     /**
+     * Sends a welcome message to a new offline user.
+     */
+    public void sendOfflineWelcomeMessage() {
+        mainPanel.getAppPanel().showOfflineWelcomeMessage(userName);
+    }
+
+    /**
      * Sends the received interval from the GUI to the {@link ClientController}.
      * @param interval the integer chosen by the user.
      */
@@ -134,6 +145,7 @@ public class MainFrame extends JFrame {
     public ClientController getClientController() {
         return clientController;
     }
+
 
 
 }

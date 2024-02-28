@@ -1,8 +1,9 @@
 package shared;
 
-import shared.Activity;
-
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.LinkedList;
 
 /**
@@ -15,7 +16,6 @@ import java.util.LinkedList;
 
 public class ActivityRegister {
     private LinkedList<Activity> activityRegister;
-    private String className="Class: ActivityRegister ";
 
     public ActivityRegister(String file) {
         createRegister(file);
@@ -26,29 +26,25 @@ public class ActivityRegister {
      * @param file
      */
     private void createRegister(String file) {
-        activityRegister = new LinkedList<>();
+        activityRegister = new LinkedList<Activity>();
         int nbrOfActivities;
 
-        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(file)) {
-            assert inputStream != null;
-            try (BufferedReader br = new BufferedReader(new InputStreamReader(inputStream))) {
-
-                nbrOfActivities = Integer.parseInt(br.readLine());
-                for (int i = 0; i < nbrOfActivities; i++) {
-                    Activity activity = new Activity();
-                    activity.setActivityName(br.readLine());
-                    activity.setActivityInstruction(br.readLine());
-                    activity.setActivityInfo(br.readLine());
-                    activity.createActivityImage(br.readLine());
-                    activityRegister.add(activity);
-                }
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file)))) {
+            nbrOfActivities = Integer.parseInt(br.readLine());
+            for (int i = 0; i < nbrOfActivities; i++) {
+                Activity activity = new Activity();
+                activity.setActivityName(br.readLine());
+                activity.setActivityInstruction(br.readLine());
+                activity.setActivityInfo(br.readLine());
+                activity.createActivityImage(br.readLine());
+                activityRegister.add(activity);
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public LinkedList<Activity> getActivityRegister() {
+    public synchronized LinkedList<Activity> getActivityRegister() {
         return activityRegister;
     }
 }

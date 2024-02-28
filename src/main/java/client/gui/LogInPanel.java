@@ -70,10 +70,10 @@ public class LogInPanel extends JPanel {
         String userName = tfUserName.getText();
         if (!userName.equals("") && !userName.contains(" ")) {
             mainFrame.sendUser(userName);
-            mainFrame.createMainFrame();
+            mainFrame.createMainPanel();
             logInFrame.closeWindow();
             if (mainFrame.checkIfOffline()) {
-                mainFrame.sendWelcomeMessage();
+                mainFrame.sendOfflineWelcomeMessage();
             }
         } else if (userName.equals("")) {
             JOptionPane.showMessageDialog(null, "Du måste välja ett användarnamn");
@@ -83,4 +83,7 @@ public class LogInPanel extends JPanel {
         }
     }
 
+    public void setTfUserName(JTextField tfUserName) {
+        this.tfUserName = tfUserName;
+    }
 }

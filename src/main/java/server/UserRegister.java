@@ -2,7 +2,10 @@ package server;
 
 import shared.User;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * Requirement: F.S.1
@@ -14,28 +17,19 @@ import java.util.*;
 
 public class UserRegister {
     private Map<String, User> userHashMap;
-
-    private LinkedList<User> userLinkedList;
+    private ArrayList<User> userArrayList;
 
     public UserRegister() {
         userHashMap = new HashMap<>();
-        userLinkedList = new LinkedList<>();
+        userArrayList = new ArrayList<>();
     }
 
     public Map<String, User> getUserHashMap() {
         return userHashMap;
     }
 
-    public void setUserHashMap(HashMap userList) {
-        this.userHashMap = userList;
-    }
-
-    public LinkedList<User> getUserLinkedList() {
-        return userLinkedList;
-    }
-
-    public void setUserLinkedList(LinkedList<User> userLinkedList) {
-        this.userLinkedList = userLinkedList;
+    public ArrayList<User> getUserArrayList() {
+        return userArrayList;
     }
 
     /**
@@ -43,26 +37,18 @@ public class UserRegister {
      *
      * @param updatedUser
      */
-    public void updateUser(User updatedUser) {
+    public synchronized void updateUser(User updatedUser) {
         userHashMap.remove(updatedUser.getUsername());
         userHashMap.put(updatedUser.getUsername(), updatedUser);
 
-        Iterator<User> iterator = userLinkedList.iterator();
+        Iterator<User> iterator = userArrayList.iterator();
         while (iterator.hasNext()) {
             User user = iterator.next();
             if (user.getUsername().equals(updatedUser.getUsername())) {
                 iterator.remove();
             }
         }
-        userLinkedList.add(updatedUser);
+        userArrayList.add(updatedUser);
     }
 
-    public ArrayList<User> getUsersOnline(ArrayList<String> userNames) {
-        ArrayList<User> usersOnline = new ArrayList<>();
-        for (String userName : userNames) {
-                usersOnline.add(userHashMap.get(userName));
-
-        }
-        return usersOnline;
-    }
 }

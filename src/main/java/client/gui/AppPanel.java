@@ -9,25 +9,27 @@ import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Requirement: K.G.1
  * This is the panel in the frame that contains pretty much all of the components in the GUI.
  *
- * @version 1.0
  * @author Oscar Kareld, Chanon Borgstrom, Carolin Nordstrom
+ * @version 1.0
  */
 public class AppPanel extends JPanel {
     private MainPanel mainPanel;
-
     private String[] interval;
     private JLabel lblTimerInfo;
     private JTextArea taActivityInfo;
     private JComboBox cmbTimeLimit;
     private LinkedList<Activity> activities;
     private JList activityList;
+    private JScrollPane activityScrollPane;
 
     private JButton btnLogOut;
     private JButton btnInterval;
@@ -36,16 +38,17 @@ public class AppPanel extends JPanel {
 
     private BorderLayout borderLayout = new BorderLayout();
     private ActionListener listener = new ButtonListener();
-    private DefaultListModel listModel;
+    private DefaultListModel activityListModel;
 
-    private String className = "Class: AppPanel: ";
     private Color clrPanels = new Color(142, 166, 192);
     private Color clrMidPanel = new Color(127, 140, 151, 151);
 
     private Timer timer;
     private int minuteInterval;
     private int secondInterval;
-    private JTextArea onlineList;
+
+    private DefaultListModel onlineUserListModel;
+    private JList onlineList;
 
     public AppPanel(MainPanel mainPanel) {
         this.mainPanel = mainPanel;
@@ -68,7 +71,13 @@ public class AppPanel extends JPanel {
 
         btnLogOut = new JButton("Logga ut");
 
-        add(activityList, BorderLayout.CENTER);
+        //TODO: Någonting här fungerar inte riktigt som det ska (issue EDIM-
+        activityScrollPane = new JScrollPane(activityList);
+        activityScrollPane.setPreferredSize(new Dimension(430, 330));
+        activityScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+
+
+        add(activityScrollPane, BorderLayout.CENTER);
         add(btnLogOut, BorderLayout.SOUTH);
         add(taActivityInfo, BorderLayout.EAST);
         add(intervalPnl, BorderLayout.WEST);
@@ -104,19 +113,20 @@ public class AppPanel extends JPanel {
 
         //centerPnl.add(cmbTimeLimit, BorderLayout.NORTH);
         //centerPnl.add(btnInterval, BorderLayout.CENTER);
-        onlineList = new JTextArea();
+
+        onlineUserListModel = new DefaultListModel();
+        onlineList = new JList<>(onlineUserListModel);
         onlineList.setBackground(clrPanels);
         onlineList.setSize(new Dimension(intervalPnl.getWidth(), intervalPnl.getHeight() - 50));
-        onlineList.setLineWrap(true);
-        onlineList.setWrapStyleWord(true);
+        onlineList.setLayoutOrientation(JList.HORIZONTAL_WRAP);
         Font font = new Font("SansSerif", Font.PLAIN, 14); //Sarseriff
         onlineList.setFont(font);
-        onlineList.setEditable(false);
         onlineList.setBorder(BorderFactory.createTitledBorder("Online: "));
+        onlineList.setVisible(true);
 
-        JScrollPane scrollPane = new JScrollPane(onlineList);
+        JScrollPane onlineScrollPane = new JScrollPane(onlineList);
 
-        centerPnl.add(scrollPane, BorderLayout.CENTER);
+        centerPnl.add(onlineScrollPane, BorderLayout.CENTER);
         intervalPnl.add(lblInterval, BorderLayout.NORTH);
         intervalPnl.add(centerPnl, BorderLayout.CENTER);
         intervalPnl.add(lblTimerInfo, BorderLayout.SOUTH);
@@ -124,15 +134,21 @@ public class AppPanel extends JPanel {
 
     public void updateLblInterval() {
         int interval;
-        interval = Integer.parseInt((String) cmbTimeLimit.getSelectedItem());
-        lblInterval.setText("Aktivt tidsintervall: " + interval + " minuter");
+        if(cmbTimeLimit.getSelectedItem().equals("Nu")) {
+            lblInterval.setText("Aktivt tidsintervall: " + 0 + " minuter");
+        }
+        else {
+            interval = Integer.parseInt((String) cmbTimeLimit.getSelectedItem());
+            lblInterval.setText("Aktivt tidsintervall: " + interval + " minuter");
+        }
+
     }
 
     /**
      * Requirements: F.A.4, F.O.1.1
      */
     public void createCBTimeLimit() {
-        interval = new String[]{"1", "5", "15", "30", "45", "60"};
+        interval = new String[]{"Nu", "5", "15", "30", "45", "60"};
         cmbTimeLimit = new JComboBox<>(interval);
         cmbTimeLimit.setSelectedIndex(3);
     }
@@ -168,7 +184,7 @@ public class AppPanel extends JPanel {
      * Requirement: F.A.1, F.A.2, F.A.4, F.O.1.1
      */
     public void decreaseInterval() {
-        secondInterval --;
+        secondInterval--;
         if (secondInterval == -1) {
             minuteInterval--;
             if (minuteInterval == -1) {
@@ -181,20 +197,28 @@ public class AppPanel extends JPanel {
 
     /**
      * Requirement: F.A.1, F.A.2, F.A.4, F.O.1.1
+     *
      * @param chosenInterval
      */
     public void countTimerInterval(int chosenInterval) {
         int difference = 0;
-        if (minuteInterval > chosenInterval) {
-            difference = minuteInterval - chosenInterval;
-            minuteInterval = minuteInterval - difference - 1;
-        } else {
-            difference = chosenInterval - minuteInterval;
-            minuteInterval = minuteInterval + difference - 1;
+        if (chosenInterval != 0) {
+            if (minuteInterval > chosenInterval) {
+                difference = minuteInterval - chosenInterval;
+                minuteInterval = minuteInterval - difference - 1;
+            } else {
+                difference = chosenInterval - minuteInterval;
+                minuteInterval = minuteInterval + difference - 1;
+            }
+            stopTimer();
+            startTimer(chosenInterval - 1, 59);
+            updateLblInterval();
         }
-        stopTimer();
-        startTimer(minuteInterval, 59);
-        updateLblInterval();
+        else {
+            stopTimer();
+            startTimer(chosenInterval, 1);
+            updateLblInterval();}
+
     }
 
 
@@ -220,8 +244,8 @@ public class AppPanel extends JPanel {
      * Requirements: F.A.5
      */
     public void createActivityList() {
-        listModel = new DefaultListModel();
-        activityList = new JList<>(listModel);
+        activityListModel = new DefaultListModel();
+        activityList = new JList<>(activityListModel);
         activityList.setPreferredSize(new Dimension(400, 320));
         activityList.setBorder(BorderFactory.createTitledBorder("Avklarade aktiviteter"));
         activityList.setSelectionMode(DefaultListSelectionModel.SINGLE_SELECTION);
@@ -253,14 +277,23 @@ public class AppPanel extends JPanel {
 
     /**
      * Requirements: F.A.5
+     *
      * @param activity
      */
     public void updateActivityList(Activity activity) {
         stopTimer();
-        int timerValue = Integer.parseInt((String) cmbTimeLimit.getSelectedItem());
-        startTimer(timerValue -1, 59);
+        int timerValue;
+        if (cmbTimeLimit.getSelectedItem().equals("Nu")) {
+            timerValue = 5;
+            lblInterval.setText("Aktivt tidsintervall: " + 5 + " minuter");
+            cmbTimeLimit.setSelectedIndex(1);
+            mainPanel.sendChosenInterval(timerValue);
+        } else {
+            timerValue= Integer.parseInt((String) cmbTimeLimit.getSelectedItem());
+        }
+        startTimer(timerValue - 1, 59);
         activities.add(activity);
-        listModel.addElement(activity.getActivityName() + " " + activity.getTime());
+        activityListModel.addElement(activity.getActivityName() + " " + activity.getTime());
         String newActivityName = splitActivityNameAndTime(activity.getActivityName());
         activity.setActivityName(newActivityName);
         updateUI();
@@ -272,17 +305,16 @@ public class AppPanel extends JPanel {
 
     /**
      * Requirements: F.K.1
+     *
      * @param usersOnline
      */
     public void displayOnlineList(ArrayList<String> usersOnline) {
-        onlineList.setText("");
-        for(String user : usersOnline) {
-            onlineList.append(user + "\n");
-        }
+        onlineList.setListData(usersOnline.toArray());
     }
 
     /**
      * Requirements: F.A.7
+     *
      * @param activity
      * @return
      */
@@ -297,6 +329,7 @@ public class AppPanel extends JPanel {
      * Requirement: F.A.1, F.A.1.2, F.A.1.3, F.A.2, F.A.3
      * Sends a notification, with sound, to the user, with an activity to perform.
      * Gives the user the option to snooze the activity or confirm it being done.
+     *
      * @param activity The activity to perform
      */
     public void showNotification(Activity activity) {
@@ -329,6 +362,7 @@ public class AppPanel extends JPanel {
         }
     }
 
+
     public class welcomePane extends JOptionPane {
         @Override
         public int getMaxCharactersPerLineCount() {
@@ -336,9 +370,20 @@ public class AppPanel extends JPanel {
         }
     }
 
-    public void showWelcomeMessage(String userName) {
-        ImageIcon welcomeIcon = new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource("exercise.png")));
+    public void showOfflineWelcomeMessage(String userName) {
+        ImageIcon welcomeIcon = new ImageIcon("imagesClient/exercise.png");
+        Image image = welcomeIcon.getImage();
+        Image newImg = image.getScaledInstance(100, 100, Image.SCALE_SMOOTH);
 
+        JOptionPane.showMessageDialog(null, "Välkommen " + userName + "!" + "\nEDIM kommer skicka notiser till dig med jämna mellanrum,\n" +
+                "med en fysisk aktivitet som ska utföras.\n" +
+                "Hur ofta du vill ha dessa notiser kan du ställa in själv.\n \n" +
+                "I offlineläge finns begränsad funktionalitet. \nOm du vill nå denna, testa att logga in igen.", "Välkommen till EDIM  - Offline", 2, new ImageIcon(newImg));
+    }
+
+
+    public void showWelcomeMessage(String userName) {
+        ImageIcon welcomeIcon = new ImageIcon("imagesClient/exercise.png");
         Image image = welcomeIcon.getImage();
         Image newImg = image.getScaledInstance(100, 100, Image.SCALE_SMOOTH);
 
@@ -355,7 +400,13 @@ public class AppPanel extends JPanel {
                 mainPanel.logOut();
             }
             if (click == btnInterval) {
-                interval = Integer.parseInt((String) cmbTimeLimit.getSelectedItem());
+                if(cmbTimeLimit.getSelectedItem().equals("Nu")) {
+                    interval = 0;
+                }
+                else  {
+                    interval = Integer.parseInt((String) cmbTimeLimit.getSelectedItem());
+                    }
+
                 countTimerInterval(interval);
                 mainPanel.sendChosenInterval(interval); //TODO: Use this method to send acitvity request when timer reaches 0?!?!
                 updateLblInterval();
