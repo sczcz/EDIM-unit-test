@@ -200,5 +200,8 @@ public class ClientController {
         return this.user;
     }
 
+    public void setMainFrame(MainFrame mainFrame) {
+        this.mainFrame = mainFrame;
+    }
 
 }

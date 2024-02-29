@@ -280,7 +280,7 @@ public class AppPanel extends JPanel {
      *
      * @param activity
      */
-    public void updateActivityList(Activity activity) {
+    public LinkedList updateActivityList(Activity activity) {
         stopTimer();
         int timerValue;
         if (cmbTimeLimit.getSelectedItem().equals("Nu")) {
@@ -297,6 +297,7 @@ public class AppPanel extends JPanel {
         String newActivityName = splitActivityNameAndTime(activity.getActivityName());
         activity.setActivityName(newActivityName);
         updateUI();
+        return activities;
     }
 
     public void showActivityInfo(String activityInfo) {
@@ -308,8 +309,9 @@ public class AppPanel extends JPanel {
      *
      * @param usersOnline
      */
-    public void displayOnlineList(ArrayList<String> usersOnline) {
+    public JList displayOnlineList(ArrayList<String> usersOnline) {
         onlineList.setListData(usersOnline.toArray());
+        return onlineList;
     }
 
     /**

@@ -15,6 +15,7 @@ public class MainPanel extends JPanel {
     private AppPanel appPanel;
     private String userName;
     private Color backGroundColor;
+    private String title;
 
     public MainPanel(MainFrame mainFrame, String userName, String status) {
         this.mainFrame = mainFrame;
@@ -28,7 +29,8 @@ public class MainPanel extends JPanel {
     public void setupPanel(String status) {
         setSize(new Dimension(819, 438));
         setBackground(backGroundColor);
-        TitledBorder tb = BorderFactory.createTitledBorder("Välkommen, " + userName + " - " + status);
+        title = "Välkommen, " + userName + " - " + status;
+        TitledBorder tb = BorderFactory.createTitledBorder(title);
         if (status.equals("OFFLINE")) {
             tb.setTitleColor(Color.RED);
         } else {
@@ -59,5 +61,9 @@ public class MainPanel extends JPanel {
 
     public MainFrame getMainFrame() {
         return mainFrame;
+    }
+
+    public String getTitle(){
+        return title;
     }
 }
