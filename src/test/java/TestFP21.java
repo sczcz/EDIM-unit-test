@@ -57,8 +57,24 @@ public class TestFP21 {
 
 
     @Test
-    public void testLogInWithInvalidUserName() {
+    public void testLogInWithInvalidUserName1() {
         when(tfUserName.getText()).thenReturn("invalid username");
+        logInPanel.logIn();
+        mockJOptionPane.verify(() -> JOptionPane.showMessageDialog(
+                any(), eq("Ditt användarnamn får inte innehålla mellanslag")));
+    }
+
+    @Test
+    public void testLogInWithInvalidUserName2() {
+        when(tfUserName.getText()).thenReturn(" invalidusername");
+        logInPanel.logIn();
+        mockJOptionPane.verify(() -> JOptionPane.showMessageDialog(
+                any(), eq("Ditt användarnamn får inte innehålla mellanslag")));
+    }
+
+    @Test
+    public void testLogInWithInvalidUserName3() {
+        when(tfUserName.getText()).thenReturn("invalidusername ");
         logInPanel.logIn();
         mockJOptionPane.verify(() -> JOptionPane.showMessageDialog(
                 any(), eq("Ditt användarnamn får inte innehålla mellanslag")));

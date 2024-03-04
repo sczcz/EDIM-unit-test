@@ -334,7 +334,7 @@ public class AppPanel extends JPanel {
      *
      * @param activity The activity to perform
      */
-    public void showNotification(Activity activity) {
+    public LinkedList<Activity> showNotification(Activity activity) {
         Toolkit.getDefaultToolkit().beep();
         ImageIcon activityIcon = createActivityIcon(activity);
         String[] buttons = {"Jag har gjort aktiviteten!", "Påminn mig om fem minuter",};
@@ -347,6 +347,7 @@ public class AppPanel extends JPanel {
 
         JFrame frame = new JFrame();
         frame.setAlwaysOnTop(true);
+        LinkedList<Activity> testPurpose = null;
 
         int answer = welcomePane.showOptionDialog(frame, instructions, activity.getActivityName(),
                 JOptionPane.OK_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE, activityIcon, buttons, buttons[0]);
@@ -354,7 +355,7 @@ public class AppPanel extends JPanel {
             activity.setCompleted(true);
             mainPanel.getMainFrame().getClientController().getUser().setDelayedActivity(null);
             mainPanel.sendActivityFromGUI(activity);
-            updateActivityList(activity);
+            testPurpose = updateActivityList(activity);
         } else {
             stopTimer();
             startTimer(4, 59);
@@ -362,6 +363,7 @@ public class AppPanel extends JPanel {
             mainPanel.getMainFrame().getClientController().getUser().setDelayedActivity(activity);
             mainPanel.sendActivityFromGUI(activity);
         }
+        return testPurpose;
     }
 
 

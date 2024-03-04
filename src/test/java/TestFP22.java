@@ -10,7 +10,6 @@ public class TestFP22 {
 
     @Before
     public void setUp() {
-        mainPanel = new MainPanel(mock(MainFrame.class), "test", "OFFLINE");
     }
 
     @After
@@ -20,7 +19,15 @@ public class TestFP22 {
 
     @Test
     public void testUserNameVisibleInGUI() {
+        mainPanel = new MainPanel(mock(MainFrame.class), "test", "OFFLINE");
         assertNotNull(mainPanel.getBorder());
         assertEquals(mainPanel.getTitle(), "Välkommen, test - OFFLINE");
+    }
+
+    @Test
+    public void testUserNameVisibleInGUI2() {
+        mainPanel = new MainPanel(mock(MainFrame.class), "test", "ONLINE");
+        assertNotNull(mainPanel.getBorder());
+        assertEquals(mainPanel.getTitle(), "Välkommen, test - ONLINE");
     }
 }
