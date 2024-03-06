@@ -4,7 +4,6 @@ import org.junit.*;
 import org.mockito.MockedStatic;
 import org.mockito.MockitoAnnotations;
 import client.gui.*;
-
 import javax.swing.*;
 import static org.mockito.Mockito.*;
 

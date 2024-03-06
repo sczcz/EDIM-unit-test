@@ -6,9 +6,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import shared.*;
-
-
-import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 
 public class TestFP11 {
@@ -55,10 +52,4 @@ public class TestFP11 {
         clientController.receiveObject(testUser);
         verify(mainFrame, never()).sendWelcomeMessage();
     }
-/*
-    @Test
-    public void testCreatingUser(){
-        clientController.createUser("testUser");
-        assertEquals("testUser", clientController.getUser().getUsername());
-    }*/
 }
