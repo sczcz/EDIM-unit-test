@@ -304,6 +304,10 @@ public class AppPanel extends JPanel {
         taActivityInfo.setText(activityInfo);
     }
 
+    public String getActivityInfo() {
+        return taActivityInfo.getText();
+    }
+
     /**
      * Requirements: F.K.1
      *
@@ -366,6 +370,9 @@ public class AppPanel extends JPanel {
         return testPurpose;
     }
 
+    public JList getActivityList(){
+        return activityList;
+    }
 
     public class welcomePane extends JOptionPane {
         @Override

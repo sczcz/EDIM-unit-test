@@ -2,19 +2,24 @@ import client.*;
 import org.junit.Before;
 import org.junit.*;
 import client.gui.*;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import shared.*;
 
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 
 public class TestFP11 {
+    @InjectMocks
     private ClientController clientController;
+    @Mock
     private MainFrame mainFrame;
 
     @Before
     public void setUp() {
-        clientController = new ClientController();
-        mainFrame = mock(MainFrame.class);
+        MockitoAnnotations.openMocks(this);
     }
 
     @After
@@ -50,4 +55,10 @@ public class TestFP11 {
         clientController.receiveObject(testUser);
         verify(mainFrame, never()).sendWelcomeMessage();
     }
+/*
+    @Test
+    public void testCreatingUser(){
+        clientController.createUser("testUser");
+        assertEquals("testUser", clientController.getUser().getUsername());
+    }*/
 }
